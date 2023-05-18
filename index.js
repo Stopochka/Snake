@@ -5,8 +5,14 @@ const scoreLabel = document.getElementById("scoreLabel");
 const highScoreLabel = document.getElementById("highScoreLabel");
 const snakeLengthLabel = document.getElementById("snakeLengthLabel");
 
+let bonusSound = new Audio('./sounds/bonus.wav');
+let loseSound = new Audio('./sounds/lose.wav');
+let winSound = new Audio('./sounds/win.wav');
+
 let score = 0;
 let highScore = 0;
+let gameSpeed = prompt("Enter game speed in miliseconds: ");
+let gameStarted = false;
 
 let block = {
     ofset: 2,
@@ -50,6 +56,8 @@ let snake = {
         body.unshift(head);
 
         if (body[0].col == apple.body[0].col && body[0].row == apple.body[0].row) {
+            bonusSound.volume = 1;
+            bonusSound.play();
             score++;
             scoreLabel.innerHTML = `Score: ${score}`;
             snakeLengthLabel.innerHTML = `Snake length: ${body.length}`;
@@ -136,10 +144,14 @@ let apple = {
 
 window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
-startGame();
+if (gameSpeed > 0) {
+    gameStarted = true;
+    startGame();
+}
 
 function scoreUpdate() {
-    if (score > highScore) {
+    if (score > highScore && gameStarted == false) {
+        winSound.play();
         highScore = score;
         highScoreLabel.innerHTML = `High score: ${highScore}`;
     }
@@ -155,12 +167,13 @@ function startGame() {
         snake.move(snake.body);
         block.draw(snake.color, snake.body, snake.body.length);
         snake.checkCollision(snake.body, snake.body.length);
-
-    }, 100);
+    }, gameSpeed);
 }
 
 function resetGame() {
     clearInterval(intervalId);
+    gameStarted = false;
+    gameSpeed = prompt("Enter game speed in miliseconds: ");
     snake.colVelocity = -1;
     snake.rowVelocity = 0;
     snake.body = [
@@ -168,12 +181,13 @@ function resetGame() {
         { col: 16, row: 15 },
         { col: 17, row: 15 },
     ];
-    scoreUpdate();
     startGame();
+    scoreUpdate();
 }
 
 function gameOver() {
     clearInterval(intervalId);
+    gameStarted = false;
     ctx.font = "50px MV Boli";
     ctx.textAlign = "center";
     ctx.fillText("GAME OVER!", canvas.width / 2, canvas.height / 2);
