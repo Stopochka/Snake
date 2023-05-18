@@ -1,0 +1,15 @@
+#gameField{
+    border: 2px solid black;
+}
+
+#scoreLabel{
+    margin-left: 50px;
+}
+
+#highScoreLabel {
+    margin-left: 50px;
+}
+
+#snakeLengthLabel {
+    margin-left: 50px;
+}
