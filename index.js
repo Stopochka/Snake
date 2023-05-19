@@ -188,7 +188,7 @@ function resetGame() {
 function gameOver() {
     clearInterval(intervalId);
     gameStarted = false;
-    ctx.font = "50px MV Boli";
+    ctx.font = "50px Times New Roman";
     ctx.textAlign = "center";
     ctx.fillText("GAME OVER!", canvas.width / 2, canvas.height / 2);
     ctx.strokeText("GAME OVER!", canvas.width / 2, canvas.height / 2);
