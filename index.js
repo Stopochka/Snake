@@ -146,11 +146,14 @@ window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
 if (gameSpeed > 0) {
     gameStarted = true;
+    scoreUpdate();
     startGame();
 }
 
 function scoreUpdate() {
-    if (score > highScore && gameStarted == false) {
+    if ((score < highScore || score == 0) && gameStarted == false) {
+        loseSound.play();
+    } else if(score > highScore && gameStarted == false){
         winSound.play();
         highScore = score;
         highScoreLabel.innerHTML = `High score: ${highScore}`;
@@ -182,7 +185,6 @@ function resetGame() {
         { col: 17, row: 15 },
     ];
     startGame();
-    scoreUpdate();
 }
 
 function gameOver() {
