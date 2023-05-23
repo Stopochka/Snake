@@ -8,14 +8,22 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <h1>Snake</h1>
-    <canvas id="gameField" height="512" width="512"></canvas><br>
+    <div class="grid">
+        <h1>Snake</h1>
+        <canvas id="gameField" height="512" width="512"></canvas><br>
+        
+        <button id="resetBtn">Reset</button>
+        <label id="scoreLabel">Score: 0</label>
+        <label id="highScoreLabel">High score: 0</label>
+        <label id="snakeLengthLabel">Snake length: 3</label>
+    </div>
+    <div class="radio">
+            <p><input type="radio" name="difficulty" value="200">Easy</p>
+            <p><input type="radio" name="difficulty" value="120">Medium</p>
+            <p><input type="radio" name="difficulty" value="75">Hard</p>
+    </div>
     
-    <button id="resetBtn">Reset</button>
-    <label id="scoreLabel">Score: 0</label>
-    <label id="highScoreLabel">High score: 0</label>
-    <label id="snakeLengthLabel">Snake length: 3</label>
-
+    
     <script src="./index.js"></script>
 </body>
 </html>

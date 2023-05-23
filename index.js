@@ -4,6 +4,7 @@ const resetBtn = document.getElementById("resetBtn");
 const scoreLabel = document.getElementById("scoreLabel");
 const highScoreLabel = document.getElementById("highScoreLabel");
 const snakeLengthLabel = document.getElementById("snakeLengthLabel");
+const radio = document.getElementsByName("difficulty");
 
 let bonusSound = new Audio('./sounds/bonus.wav');
 let loseSound = new Audio('./sounds/lose.wav');
@@ -11,7 +12,7 @@ let winSound = new Audio('./sounds/win.wav');
 
 let score = 0;
 let highScore = 0;
-let gameSpeed = prompt("Enter game speed in miliseconds: ");
+let gameSpeed;
 let gameStarted = false;
 
 let block = {
@@ -68,7 +69,6 @@ let snake = {
     },
     changeDirection: function (event) {
         const keyPressed = event.keyCode;
-        console.log(keyPressed);
         const keys = {
             left: 37,
             up: 38,
@@ -142,18 +142,30 @@ let apple = {
     }
 }
 
+function choseDifficulty() {
+    for (let i = 0; i < radio.length; i++) {
+        radio[i].onchange = () => {
+            gameSpeed = Number(radio[i].value);
+            gameStarted = true;
+            if (gameStarted == true) {
+                for (let r = 0; r < radio.length; r++) {
+                    radio[r].disabled = true;
+                }
+            }
+            scoreUpdate();
+            startGame();
+        }
+    }
+}
+
+choseDifficulty();
 window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
-if (gameSpeed > 0) {
-    gameStarted = true;
-    scoreUpdate();
-    startGame();
-}
 
 function scoreUpdate() {
     if ((score < highScore || score == 0) && gameStarted == false) {
         loseSound.play();
-    } else if(score > highScore && gameStarted == false){
+    } else if (score > highScore && gameStarted == false) {
         winSound.play();
         highScore = score;
         highScoreLabel.innerHTML = `High score: ${highScore}`;
@@ -176,7 +188,6 @@ function startGame() {
 function resetGame() {
     clearInterval(intervalId);
     gameStarted = false;
-    gameSpeed = prompt("Enter game speed in miliseconds: ");
     snake.colVelocity = -1;
     snake.rowVelocity = 0;
     snake.body = [
@@ -184,7 +195,11 @@ function resetGame() {
         { col: 16, row: 15 },
         { col: 17, row: 15 },
     ];
-    startGame();
+    for (let r = 0; r < radio.length; r++) {
+        radio[r].checked = false;
+        radio[r].disabled = false;
+    }
+    choseDifficulty();
 }
 
 function gameOver() {
