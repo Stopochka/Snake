@@ -158,6 +158,7 @@ function choseDifficulty() {
     }
 }
 
+gameCanvas.clear();
 choseDifficulty();
 window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
