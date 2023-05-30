@@ -18,7 +18,7 @@ let gameSpeed;
 let gameStarted = false;
 
 let block = {
-    ofset: 2,
+    ofset: undefined,
     size: undefined,
     draw: function (color, body, length) {
         for (let i = 0; i < length; i++) {
@@ -60,7 +60,7 @@ let snake = {
         body.unshift(head);
 
         if (body[0].col == apple.body[0].col && body[0].row == apple.body[0].row) {
-            bonusSound.volume = 1;
+            bonusSound.volume = 0.5;
             bonusSound.play();
             score++;
             scoreLabel.innerHTML = `Score: ${score}`;
@@ -138,8 +138,10 @@ let apple = {
         apple.body[0].col = Math.floor(Math.random() * (gameCanvas.widthInBlocks - 2)) + 1;
         apple.body[0].row = Math.floor(Math.random() * (gameCanvas.heightInBlocks - 2)) + 1;
         for (let i = 1; i < snake.body.length; i++) {
-            if (snake.body[i].col == apple.body[0].col && snake.body[i].row == apple.body[0].row) {
-                apple.move();
+            for(let j = 0; j < 3; j++){ 
+                if (snake.body[i].col == apple.body[0].col && snake.body[i].row == apple.body[0].row) {
+                    apple.move();
+                }
             }
         }
     }
@@ -159,6 +161,12 @@ function gameSettings() {
     for (let i = 0; i < radioBlockSize.length; i++) {
         radioBlockSize[i].onchange = () => {
             block.size = Number(radioBlockSize[i].value);
+            if(block.size == 32){
+                block.ofset = 4;
+            } else if(block.size == 16){
+                block.ofset = 2;
+            }
+            
             gameCanvas.widthInBlocks = canvas.width / block.size;
             gameCanvas.heightInBlocks = canvas.height / block.size;
             if (radioBlockSize[i].checked) {
@@ -168,7 +176,6 @@ function gameSettings() {
             }
         }
     }
-    gameStarted = true;
     startBtn.addEventListener("click", startGame);
 }
 
@@ -179,8 +186,10 @@ resetBtn.addEventListener("click", resetGame);
 
 function scoreUpdate() {
     if ((score < highScore || score == 0) && gameStarted == false) {
+        loseSound.volume = 0.5;
         loseSound.play();
     } else if (score > highScore && gameStarted == false) {
+        winSound.volume = 0.5;
         winSound.play();
         highScore = score;
         highScoreLabel.innerHTML = `High score: ${highScore}`;
@@ -191,6 +200,7 @@ function scoreUpdate() {
 }
 
 function startGame() {
+    gameStarted = true;
     startBtn.disabled = true;
     intervalId = setInterval(function () {
         gameCanvas.clear();
@@ -229,9 +239,12 @@ function resetGame() {
 function gameOver() {
     clearInterval(intervalId);
     gameStarted = false;
-    ctx.font = "50px Times New Roman";
+    ctx.font = "60px Times New Roman";
     ctx.textAlign = "center";
     ctx.fillText("GAME OVER!", canvas.width / 2, canvas.height / 2);
     ctx.strokeText("GAME OVER!", canvas.width / 2, canvas.height / 2);
+    ctx.font = "35px Times New Roman";
+    ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 50);
+    ctx.strokeText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 50);
     scoreUpdate();
 }
