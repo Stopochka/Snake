@@ -1,10 +1,12 @@
 const canvas = document.getElementById("gameField");
 const ctx = canvas.getContext("2d");
 const resetBtn = document.getElementById("resetBtn");
+const startBtn = document.getElementById("startBtn");
 const scoreLabel = document.getElementById("scoreLabel");
 const highScoreLabel = document.getElementById("highScoreLabel");
 const snakeLengthLabel = document.getElementById("snakeLengthLabel");
-const radio = document.getElementsByName("difficulty");
+const radioDifficulty = document.getElementsByName("difficulty");
+const radioBlockSize = document.getElementsByName("block-size");
 
 let bonusSound = new Audio('./sounds/bonus.wav');
 let loseSound = new Audio('./sounds/lose.wav');
@@ -17,7 +19,7 @@ let gameStarted = false;
 
 let block = {
     ofset: 2,
-    size: 16,
+    size: undefined,
     draw: function (color, body, length) {
         for (let i = 0; i < length; i++) {
             let posX = body[i].col * block.size;
@@ -30,8 +32,9 @@ let block = {
 }
 
 let gameCanvas = {
-    widthInBlocks: canvas.width / block.size,
-    heightInBlocks: canvas.height / block.size,
+    widthInBlocks: undefined,
+    heightInBlocks: undefined,
+    
     clear: function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "black";
@@ -44,9 +47,9 @@ let snake = {
     colVelocity: -1,
     rowVelocity: 0,
     body: [
+        { col: 14, row: 15 },
         { col: 15, row: 15 },
         { col: 16, row: 15 },
-        { col: 17, row: 15 },
     ],
     move: function (body) {
         const head = {
@@ -142,24 +145,35 @@ let apple = {
     }
 }
 
-function choseDifficulty() {
-    for (let i = 0; i < radio.length; i++) {
-        radio[i].onchange = () => {
-            gameSpeed = Number(radio[i].value);
-            gameStarted = true;
-            if (gameStarted == true) {
-                for (let r = 0; r < radio.length; r++) {
-                    radio[r].disabled = true;
+function gameSettings() {
+    for (let i = 0; i < radioDifficulty.length; i++) {
+        radioDifficulty[i].onchange = () => {
+            gameSpeed = Number(radioDifficulty[i].value);
+            if (radioDifficulty[i].checked) {
+                for (let r = 0; r < radioDifficulty.length; r++) {
+                    radioDifficulty[r].disabled = true;
                 }
             }
-            scoreUpdate();
-            startGame();
         }
     }
+    for (let i = 0; i < radioBlockSize.length; i++) {
+        radioBlockSize[i].onchange = () => {
+            block.size = Number(radioBlockSize[i].value);
+            gameCanvas.widthInBlocks = canvas.width / block.size;
+            gameCanvas.heightInBlocks = canvas.height / block.size;
+            if (radioBlockSize[i].checked) {
+                for (let r = 0; r < radioBlockSize.length; r++) {
+                    radioBlockSize[r].disabled = true;
+                }
+            }
+        }
+    }
+    gameStarted = true;
+    startBtn.addEventListener("click", startGame);
 }
 
 gameCanvas.clear();
-choseDifficulty();
+gameSettings();
 window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
 
@@ -177,6 +191,7 @@ function scoreUpdate() {
 }
 
 function startGame() {
+    startBtn.disabled = true;
     intervalId = setInterval(function () {
         gameCanvas.clear();
         block.draw(apple.color, apple.body, apple.body.length);
@@ -192,15 +207,23 @@ function resetGame() {
     snake.colVelocity = -1;
     snake.rowVelocity = 0;
     snake.body = [
+        { col: 14, row: 15 },
         { col: 15, row: 15 },
         { col: 16, row: 15 },
-        { col: 17, row: 15 },
     ];
-    for (let r = 0; r < radio.length; r++) {
-        radio[r].checked = false;
-        radio[r].disabled = false;
+    apple.body = [
+        { col: 12, row: 12 },
+    ];
+    for (let r = 0; r < radioDifficulty.length; r++) {
+        radioDifficulty[r].checked = false;
+        radioDifficulty[r].disabled = false;
     }
-    choseDifficulty();
+    for (let r = 0; r < radioBlockSize.length; r++) {
+        radioBlockSize[r].checked = false;
+        radioBlockSize[r].disabled = false;
+    }
+    startBtn.disabled = false;
+    gameSettings();
 }
 
 function gameOver() {
