@@ -5,8 +5,10 @@ const startBtn = document.getElementById("startBtn");
 const scoreLabel = document.getElementById("scoreLabel");
 const highScoreLabel = document.getElementById("highScoreLabel");
 const snakeLengthLabel = document.getElementById("snakeLengthLabel");
+const radioCanvasResolution = document.getElementsByName("canvas-resolution");
 const radioDifficulty = document.getElementsByName("difficulty");
 const radioBlockSize = document.getElementsByName("block-size");
+const radioBorderPassability = document.getElementsByName("border-passability");
 
 let bonusSound = new Audio('./sounds/bonus.wav');
 let loseSound = new Audio('./sounds/lose.wav');
@@ -16,6 +18,7 @@ let score = 0;
 let highScore = 0;
 let gameSpeed;
 let gameStarted = false;
+let borderPassability;
 
 let block = {
     ofset: undefined,
@@ -25,8 +28,7 @@ let block = {
             let posX = body[i].col * block.size;
             let posY = body[i].row * block.size;
             ctx.fillStyle = color;
-            ctx.fillRect(posX + 1, posY + 1, block.size - block.ofset, block.size - block.ofset)
-
+            ctx.fillRect(posX + 1, posY + 1, block.size - block.ofset, block.size - block.ofset);
         }
     }
 }
@@ -34,7 +36,7 @@ let block = {
 let gameCanvas = {
     widthInBlocks: undefined,
     heightInBlocks: undefined,
-    
+
     clear: function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "black";
@@ -108,16 +110,32 @@ let snake = {
     checkCollision: function (body, length) {
         switch (true) {
             case (body[0].col < 0):
-                gameOver();
+                if (borderPassability == 1) {
+                    body[0].col += gameCanvas.widthInBlocks;
+                } else {
+                    gameOver();
+                }
                 break;
             case (body[0].col >= gameCanvas.widthInBlocks):
-                gameOver();
+                if (borderPassability == 1) {
+                    body[0].col -= gameCanvas.widthInBlocks;
+                } else {
+                    gameOver();
+                }
                 break;
             case (body[0].row < 0):
-                gameOver();
+                if (borderPassability == 1) {
+                    body[0].row += gameCanvas.heightInBlocks;
+                } else {
+                    gameOver();
+                }
                 break;
             case (body[0].row >= gameCanvas.heightInBlocks):
-                gameOver();
+                if (borderPassability == 1) {
+                    body[0].row -= gameCanvas.heightInBlocks;
+                } else {
+                    gameOver();
+                }
                 break;
         }
 
@@ -138,7 +156,7 @@ let apple = {
         apple.body[0].col = Math.floor(Math.random() * (gameCanvas.widthInBlocks - 2)) + 1;
         apple.body[0].row = Math.floor(Math.random() * (gameCanvas.heightInBlocks - 2)) + 1;
         for (let i = 1; i < snake.body.length; i++) {
-            for(let j = 0; j < 3; j++){ 
+            for (let j = 0; j < 5; j++) {
                 if (snake.body[i].col == apple.body[0].col && snake.body[i].row == apple.body[0].row) {
                     apple.move();
                 }
@@ -148,38 +166,50 @@ let apple = {
 }
 
 function gameSettings() {
-    for (let i = 0; i < radioDifficulty.length; i++) {
-        radioDifficulty[i].onchange = () => {
-            gameSpeed = Number(radioDifficulty[i].value);
-            if (radioDifficulty[i].checked) {
-                for (let r = 0; r < radioDifficulty.length; r++) {
-                    radioDifficulty[r].disabled = true;
-                }
-            }
+    radioCanvasResolution.forEach(element => element.onchange = () => {
+        canvas.width = Number(element.value);
+        if (element.checked) {
+            radioCanvasResolution.forEach(element => element.disabled = true);
         }
-    }
-    for (let i = 0; i < radioBlockSize.length; i++) {
-        radioBlockSize[i].onchange = () => {
-            block.size = Number(radioBlockSize[i].value);
-            if(block.size == 32){
-                block.ofset = 4;
-            } else if(block.size == 16){
-                block.ofset = 2;
-            }
-            
-            gameCanvas.widthInBlocks = canvas.width / block.size;
-            gameCanvas.heightInBlocks = canvas.height / block.size;
-            if (radioBlockSize[i].checked) {
-                for (let r = 0; r < radioBlockSize.length; r++) {
-                    radioBlockSize[r].disabled = true;
-                }
-            }
+    })
+
+    radioDifficulty.forEach(element => element.onchange = () => {
+        gameSpeed = Number(element.value);
+        if (element.checked) {
+            radioDifficulty.forEach(element => element.disabled = true);
         }
-    }
+    })
+
+    radioBlockSize.forEach(element => element.onchange = () => {
+        block.size = Number(element.value);
+        if (block.size == 32) {
+            block.ofset = 4;
+        } else if (block.size == 16) {
+            block.ofset = 2;
+        }
+
+        gameCanvas.widthInBlocks = canvas.width / block.size;
+        gameCanvas.heightInBlocks = canvas.height / block.size;
+        if (element.checked) {
+            radioBlockSize.forEach(element => element.disabled = true);
+        }
+    })
+
+    radioBorderPassability.forEach(element => element.onchange = () => {
+        borderPassability = Number(element.value);
+        if (element.checked) {
+            radioBorderPassability.forEach(element => element.disabled = true);
+        }
+    })
+
     startBtn.addEventListener("click", startGame);
 }
 
-gameCanvas.clear();
+function resetSettings(radio) {
+    radio.forEach(element => element.checked = false);
+    radio.forEach(element => element.disabled = false);
+}
+
 gameSettings();
 window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
@@ -224,14 +254,10 @@ function resetGame() {
     apple.body = [
         { col: 12, row: 12 },
     ];
-    for (let r = 0; r < radioDifficulty.length; r++) {
-        radioDifficulty[r].checked = false;
-        radioDifficulty[r].disabled = false;
-    }
-    for (let r = 0; r < radioBlockSize.length; r++) {
-        radioBlockSize[r].checked = false;
-        radioBlockSize[r].disabled = false;
-    }
+    resetSettings(radioDifficulty);
+    resetSettings(radioBlockSize);
+    resetSettings(radioBorderPassability);
+    resetSettings(radioCanvasResolution);
     startBtn.disabled = false;
     gameSettings();
 }
