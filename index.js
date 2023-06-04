@@ -9,6 +9,7 @@ const radioCanvasResolution = document.getElementsByName("canvas-resolution");
 const radioDifficulty = document.getElementsByName("difficulty");
 const radioBlockSize = document.getElementsByName("block-size");
 const radioBorderPassability = document.getElementsByName("border-passability");
+const snakeColorPicker = document.getElementById("snake-color");
 
 let bonusSound = new Audio('./sounds/bonus.wav');
 let loseSound = new Audio('./sounds/lose.wav');
@@ -45,7 +46,7 @@ let gameCanvas = {
 }
 
 let snake = {
-    color: "green",
+    color: "",
     colVelocity: -1,
     rowVelocity: 0,
     body: [
@@ -202,6 +203,8 @@ function gameSettings() {
         }
     })
 
+
+
     startBtn.addEventListener("click", startGame);
 }
 
@@ -230,7 +233,9 @@ function scoreUpdate() {
 }
 
 function startGame() {
+    snake.color = snakeColorPicker.value;
     gameStarted = true;
+
     startBtn.disabled = true;
     intervalId = setInterval(function () {
         gameCanvas.clear();
