@@ -20,6 +20,7 @@ let highScore = 0;
 let gameSpeed;
 let gameStarted = false;
 let borderPassability;
+let backgroundColor = "black";
 
 let block = {
     ofset: undefined,
@@ -40,7 +41,7 @@ let gameCanvas = {
 
     clear: function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "black";
+        ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 }
@@ -166,6 +167,35 @@ let apple = {
     }
 }
 
+function isBrightColor(color) {
+    // Extract RGB components from the color
+    const red = (color >> 16) & 0xFF;
+    const green = (color >> 8) & 0xFF;
+    const blue = color & 0xFF;
+
+    // Calculate brightness using the formula
+    const brightness = Math.sqrt(
+        red * red * 0.241 + green * green * 0.691 + blue * blue * 0.068
+    );
+
+    // Determine if the color is bright
+    if (brightness >= 200) {
+        return true;
+    } else {
+        return false
+    }
+}
+
+function changeBackgroundColor(snakeColor) {
+    if (isBrightColor(parseInt(snakeColor.slice(1), 16)) == false) {
+        backgroundColor = "white";
+    } else {
+        backgroundColor = "black";
+    }
+
+    gameCanvas.clear();
+}
+
 function gameSettings() {
     radioCanvasResolution.forEach(element => element.onchange = () => {
         canvas.width = Number(element.value);
@@ -203,8 +233,6 @@ function gameSettings() {
         }
     })
 
-
-
     startBtn.addEventListener("click", startGame);
 }
 
@@ -218,10 +246,10 @@ window.addEventListener("keydown", snake.changeDirection);
 resetBtn.addEventListener("click", resetGame);
 
 function scoreUpdate() {
-    if ((score < highScore || score == 0) && gameStarted == false) {
+    if ((score < highScore || score == 0)) {
         loseSound.volume = 0.5;
         loseSound.play();
-    } else if (score > highScore && gameStarted == false) {
+    } else if (score > highScore) {
         winSound.volume = 0.5;
         winSound.play();
         highScore = score;
@@ -233,7 +261,18 @@ function scoreUpdate() {
 }
 
 function startGame() {
+    snake.colVelocity = -1;
+    snake.rowVelocity = 0;
+    snake.body = [
+        { col: 14, row: 15 },
+        { col: 15, row: 15 },
+        { col: 16, row: 15 },
+    ];
+    apple.body = [
+        { col: 12, row: 12 },
+    ];
     snake.color = snakeColorPicker.value;
+    changeBackgroundColor(snake.color);
     gameStarted = true;
 
     startBtn.disabled = true;
@@ -248,7 +287,6 @@ function startGame() {
 
 function resetGame() {
     clearInterval(intervalId);
-    gameStarted = false;
     snake.colVelocity = -1;
     snake.rowVelocity = 0;
     snake.body = [
@@ -259,6 +297,8 @@ function resetGame() {
     apple.body = [
         { col: 12, row: 12 },
     ];
+    highScore = score;
+    score = 0;
     resetSettings(radioDifficulty);
     resetSettings(radioBlockSize);
     resetSettings(radioBorderPassability);
@@ -270,6 +310,7 @@ function resetGame() {
 function gameOver() {
     clearInterval(intervalId);
     gameStarted = false;
+    startBtn.disabled = false;
     ctx.font = "60px Times New Roman";
     ctx.textAlign = "center";
     ctx.fillText("GAME OVER!", canvas.width / 2, canvas.height / 2);
